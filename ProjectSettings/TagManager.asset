@@ -2,17 +2,17 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Parte 1
   - Water
   - UI
-  - 
-  - 
+  - Parte 2
+  - Parte 3
   - 
   - 
   - 
@@ -41,3 +41,14 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Parte1
+    uniqueID: 4090752683
+    locked: 0
+  - name: Parte2
+    uniqueID: 1537140149
+    locked: 0
+  - name: Parte3
+    uniqueID: 1506814931
+    locked: 0
+  m_RenderingLayers:
+  - Default
