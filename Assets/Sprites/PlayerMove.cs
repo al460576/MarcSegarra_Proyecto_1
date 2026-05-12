@@ -28,6 +28,8 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        Debug.Log("inputX: " + inputX + " | GetKey D: " + Input.GetKey(KeyCode.D) + " | GetKey A: " + Input.GetKey(KeyCode.A));
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (!isPaused)
