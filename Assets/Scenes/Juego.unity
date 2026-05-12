@@ -430,7 +430,7 @@ Transform:
   m_GameObject: {fileID: 389180972}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.2, y: -3.87, z: 0}
+  m_LocalPosition: {x: -16.19, y: -3.791, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -449,12 +449,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc42ef44a4b391342bc2eb8a69bd39e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocidad: 2
+  velocidad: 5
   salto: 3
   checkGround: {fileID: 0}
   betterJump: 1
-  fallMultiplier: 0.5
-  lowJumpMultiplier: 1
+  fallMultiplier: 1.5
+  lowJumpMultiplier: 2
 --- !u!50 &389180981
 Rigidbody2D:
   serializedVersion: 5
@@ -789,7 +789,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dc44265c49cfff4aa51925e84a6c742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isGrounded: 0
+  isGrounded: 1
 --- !u!1 &597932870
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,7 +1044,7 @@ TilemapCollider2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
+  m_LayerOverridePriority: 2
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
