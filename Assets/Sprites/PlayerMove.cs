@@ -31,36 +31,31 @@ public class PlayerMove : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (!isPaused)
-                OpenOptions();
-            else
-                CloseOptions();
+            {
+            OpenOptions();
+            }
         }
+        if (!isPaused){
+            if(Input.GetKey(KeyCode.RightArrow)||Input.GetKey(KeyCode.D)){
+                inputX = velocidad;
+            }else if(Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.A)){
+                inputX = -velocidad;
+            }
 
-        if (!isPaused && (Input.GetKeyUp(KeyCode.RightArrow) || Input.GetKeyUp(KeyCode.D)))
-        {
-          inputX = velocidad;
-        }else if (!isPaused && (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.A)))
-        {
-          inputX = -velocidad;
-        }else{
-            inputX =0;
-        }
-        if (!isPaused && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)))
-        {
-            if (checkGround.isGrounded)
+            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) && checkGround.isGrounded)
+            {
                 jumpRequested = true;
-        }
-        if (!isPaused)
-        {
-            jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
-        }else
-        {
+            }
+            jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);    
+        }else{
+            inputX = 0;
             jumpHeld = false;
         }
     }
+    
     void FixedUpdate()
     {
-        if (isPaused) return;
+        if (!isPaused) return;
 
         rb2D.linearVelocity = new Vector2(inputX, rb2D.linearVelocity.y);
 
