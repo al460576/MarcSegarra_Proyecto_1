@@ -17,18 +17,19 @@ public class PlayerMove : MonoBehaviour
     private float inputX = 0f;
     private bool jumpHeld = false;
 
-    // ✅ Flag para detectar el salto en Update y aplicarlo en FixedUpdate
     private bool jumpRequested = false;
 
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
         checkGround = GetComponentInChildren<CheckGround>();
+        inputX = 0f;
+        rb2D.gravityScale = 1f;
     }
 
     void Update()
     {
-        Debug.Log("inputX: " + inputX + " | GetKey D: " + Input.GetKey(KeyCode.D) + " | GetKey A: " + Input.GetKey(KeyCode.A));
+        //Debug.Log("inputX: " + inputX + " | GetKey D: " + Input.GetKey(KeyCode.D) + " | GetKey A: " + Input.GetKey(KeyCode.A));
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -38,7 +39,7 @@ public class PlayerMove : MonoBehaviour
             }
         }
         if (!isPaused){
-             Debug.Log("inputX: " + inputX + " | D: " + Input.GetKey(KeyCode.D) + " | RightArrow: " + Input.GetKey(KeyCode.RightArrow));
+             //Debug.Log("inputX: " + inputX + " | D: " + Input.GetKey(KeyCode.D) + " | RightArrow: " + Input.GetKey(KeyCode.RightArrow));
             if(Input.GetKey(KeyCode.RightArrow)||Input.GetKey(KeyCode.D))
             {
                 inputX = velocidad;
@@ -73,12 +74,21 @@ public class PlayerMove : MonoBehaviour
             jumpRequested = false;
         }
 
-        if (betterJump)
+    if (betterJump)
         {
             if (rb2D.linearVelocity.y < 0)
-                rb2D.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-            else if (rb2D.linearVelocity.y > 0 && jumpHeld)
-                rb2D.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+            {
+                // ✅ Usa gravedad * fallMultiplier directamente, no acumulativa
+                rb2D.gravityScale = fallMultiplier;
+            }
+            else if (rb2D.linearVelocity.y > 0 && !jumpHeld)
+            {
+                rb2D.gravityScale = lowJumpMultiplier;
+            }
+            else
+            {
+                rb2D.gravityScale = 1f;
+            }
         }
     }
 
