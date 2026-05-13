@@ -15,6 +15,10 @@ public class Jugar : MonoBehaviour
             playerMove.CloseOptions();
         }
     }
+    void Start()
+    {
+        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("Volumen", 1f);
+    }
 
     public void Salir(){
         Application.Quit();
