@@ -3,12 +3,13 @@ using UnityEngine;
 public class CheckGround : MonoBehaviour
 {
     public bool isGrounded;
-    private void OnTriggerEnter2D(Collider2D collision)
+    public float distancia = 1f;
+    public LayerMask groundLayer;
+
+    private void Update()
     {
-        isGrounded = true;
-    }
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        isGrounded = false;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, distancia, groundLayer);
+        isGrounded = hit.collider != null;
+        Debug.Log("isGrounded: " + isGrounded + " | hit: " + (hit.collider != null ? hit.collider.name : "null") + " | groundLayer: " + groundLayer.value);
     }
 }
