@@ -15,6 +15,11 @@ public class PlayerMovePrueba : MonoBehaviour
     public float groundCheckDistance = 0.1f;
     public LayerMask groundLayer;
 
+    [Header("Ataque")]
+    public float dañoGolpe = 25f;
+    public float tiempoEntreGolpes = 0.5f;
+
+    private float timerGolpe = 0f;
     private float coyoteCounter;
     private float jumpBufferCounter;
 
@@ -72,6 +77,7 @@ public class PlayerMovePrueba : MonoBehaviour
             0f,
             groundLayer
         ) != null;
+
         if (isJumpPressed)
             jumpBufferCounter = jumpBufferTime;
         else
@@ -81,16 +87,20 @@ public class PlayerMovePrueba : MonoBehaviour
             coyoteCounter = coyoteTime;
         else
             coyoteCounter -= Time.deltaTime;
+
+        if (timerGolpe > 0)
+            timerGolpe -= Time.deltaTime;
     }
 
     private void FixedUpdate()
     {
         rb2D.linearVelocity = new Vector2(inputX, rb2D.linearVelocity.y);
         if (rb2D.linearVelocity.y < 0)
-        rb2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 1.5f * Time.fixedDeltaTime;
+            rb2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 1.5f * Time.fixedDeltaTime;
 
         HandleJump();
     }
+
     private void HandleJump()
     {
         if (jumpBufferCounter > 0 && coyoteCounter > 0)
@@ -111,5 +121,25 @@ public class PlayerMovePrueba : MonoBehaviour
             isJumpPressed = true;
         else if (ctx.canceled)
             isJumpPressed = false;
+    }
+
+    // --- Ataque automático al tocar al enemigo ---
+
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.CompareTag("Enemy") && timerGolpe <= 0)
+        {
+            col.GetComponent<VidaEnemigo>()?.RecibirDaño(dañoGolpe);
+            timerGolpe = tiempoEntreGolpes;
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D col)
+    {
+        if (col.CompareTag("Enemy") && timerGolpe <= 0)
+        {
+            col.GetComponent<VidaEnemigo>()?.RecibirDaño(dañoGolpe);
+            timerGolpe = tiempoEntreGolpes;
+        }
     }
 }

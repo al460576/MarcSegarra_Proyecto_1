@@ -6,18 +6,19 @@ public class VidaJugador : MonoBehaviour
 {
     public float vidaMaxima = 100f;
     public float vidaActual = 100f;
-    public Slider barraVida;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public Image barraVida;
+
     void Start()
     {
         vidaActual = vidaMaxima;
-        barraVida.maxValue = vidaMaxima;
-        barraVida.value = vidaActual;
+        barraVida.fillAmount = 1f;
     }
+
     public void RecibirDaño(float daño)
     {
         vidaActual -= daño;
-        barraVida.value = vidaActual;
+        barraVida.fillAmount = vidaActual / vidaMaxima;
+        Debug.Log("Vida jugador: " + vidaActual);
         if (vidaActual <= 0)
         {
             Morir();
