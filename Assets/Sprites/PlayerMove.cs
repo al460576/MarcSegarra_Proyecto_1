@@ -1,109 +1,144 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class PlayerMove : MonoBehaviour
 {
-    public float velocidad = 2;
-    public float salto = 3;
+    [Header("Movimiento")]
+    public float velocidad = 5f;
+
+    [Header("Salto")]
+    public float salto = 20f;
+    public float coyoteTime = 0.15f;
+    public float jumpBufferTime = 0.15f;
+
+    [Header("Suelo")]
+    public float groundCheckDistance = 0.1f;
+    public LayerMask groundLayer;
+
+    [Header("Ataque")]
+    public float dañoGolpe = 25f;
+    public float tiempoEntreGolpes = 0.5f;
+
+    private float timerGolpe = 0f;
+    private float coyoteCounter;
+    private float jumpBufferCounter;
 
     private Rigidbody2D rb2D;
-    public CheckGround checkGround;
+    private CapsuleCollider2D capsuleCollider;
 
-    public bool betterJump = false;
-    public float fallMultiplier = 1.5f;
-    public float lowJumpMultiplier = 2f;
+    private InputAction moveAction;
+    private InputAction jumpAction;
 
-    private bool isPaused = false;
     private float inputX = 0f;
-    private bool jumpHeld = false;
+    private bool isJumpPressed = false;
+    private bool isGrounded = false;
 
-    private bool jumpRequested = false;
-
-    void Start()
+    private void Awake()
     {
         rb2D = GetComponent<Rigidbody2D>();
-        checkGround = GetComponentInChildren<CheckGround>();
-        inputX = 0f;
-        rb2D.gravityScale = 1f;
+        capsuleCollider = GetComponent<CapsuleCollider2D>();
     }
 
-    void Update()
+    private void OnEnable()
     {
-        //Debug.Log("inputX: " + inputX + " | GetKey D: " + Input.GetKey(KeyCode.D) + " | GetKey A: " + Input.GetKey(KeyCode.A));
+        moveAction = new InputAction("Move", InputActionType.Value);
+        var composite = moveAction.AddCompositeBinding("1DAxis");
+        composite.With("Negative", "<Keyboard>/a");
+        composite.With("Negative", "<Keyboard>/leftArrow");
+        composite.With("Positive", "<Keyboard>/d");
+        composite.With("Positive", "<Keyboard>/rightArrow");
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (!isPaused)
-            {
-            OpenOptions();
-            }
-        }
-        if (!isPaused){
-             //Debug.Log("inputX: " + inputX + " | D: " + Input.GetKey(KeyCode.D) + " | RightArrow: " + Input.GetKey(KeyCode.RightArrow));
-            if(Input.GetKey(KeyCode.RightArrow)||Input.GetKey(KeyCode.D))
-            {
-                inputX = velocidad;
-            }else if(Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.A)) 
-            {
-                inputX = -velocidad;
-            }else{
-                inputX = 0;
-            }
-            if ((Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)|| Input.GetKeyDown(KeyCode.Space)) && checkGround.isGrounded)
-            {
-                jumpRequested = true;
-            }
-            jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)||Input.GetKey(KeyCode.Space);    
-        }else{
-            inputX = 0;
-            jumpHeld = false;
-        }
+        jumpAction = new InputAction("Jump", InputActionType.Button);
+        jumpAction.AddBinding("<Keyboard>/space");
+        jumpAction.AddBinding("<Keyboard>/upArrow");
+        jumpAction.AddBinding("<Keyboard>/w");
+
+        moveAction.Enable();
+        jumpAction.Enable();
+        jumpAction.performed += OnJump;
+        jumpAction.canceled += OnJump;
     }
-    
-    void FixedUpdate()
-    {
-        if (isPaused) return;
 
+    private void OnDisable()
+    {
+        jumpAction.performed -= OnJump;
+        jumpAction.canceled -= OnJump;
+        jumpAction.Disable();
+        moveAction.Disable();
+    }
+
+    private void Update()
+    {
+        inputX = moveAction.ReadValue<float>() * velocidad;
+
+        isGrounded = Physics2D.OverlapBox(
+            new Vector2(capsuleCollider.bounds.center.x, capsuleCollider.bounds.min.y - 0.05f),
+            new Vector2(capsuleCollider.bounds.size.x * 0.9f, 0.1f),
+            0f,
+            groundLayer
+        ) != null;
+
+        if (isJumpPressed)
+            jumpBufferCounter = jumpBufferTime;
+        else
+            jumpBufferCounter -= Time.deltaTime;
+
+        if (isGrounded)
+            coyoteCounter = coyoteTime;
+        else
+            coyoteCounter -= Time.deltaTime;
+
+        if (timerGolpe > 0)
+            timerGolpe -= Time.deltaTime;
+    }
+
+    private void FixedUpdate()
+    {
         rb2D.linearVelocity = new Vector2(inputX, rb2D.linearVelocity.y);
-         Debug.Log("Velocidad aplicada: " + rb2D.linearVelocity + " | inputX: " + inputX);
+        if (rb2D.linearVelocity.y < 0)
+            rb2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 1.5f * Time.fixedDeltaTime;
 
-        if (jumpRequested)
+        HandleJump();
+    }
+
+    private void HandleJump()
+    {
+        if (jumpBufferCounter > 0 && coyoteCounter > 0)
         {
-            if (checkGround.isGrounded)
-                rb2D.AddForce(Vector2.up * salto, ForceMode2D.Impulse);
-            jumpRequested = false;
+            rb2D.linearVelocity = new Vector2(rb2D.linearVelocity.x, salto);
+            jumpBufferCounter = 0;
+            coyoteCounter = 0;
+            isJumpPressed = false;
         }
 
-    if (betterJump)
+        if (!isJumpPressed && rb2D.linearVelocity.y > 0)
+            rb2D.linearVelocity = new Vector2(rb2D.linearVelocity.x, rb2D.linearVelocity.y * 0.5f);
+    }
+
+    private void OnJump(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed)
+            isJumpPressed = true;
+        else if (ctx.canceled)
+            isJumpPressed = false;
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.CompareTag("Enemy") && timerGolpe <= 0)
         {
-            if (rb2D.linearVelocity.y < 0)
-            {
-                // ✅ Usa gravedad * fallMultiplier directamente, no acumulativa
-                rb2D.gravityScale = fallMultiplier;
-            }
-            else if (rb2D.linearVelocity.y > 0 && !jumpHeld)
-            {
-                rb2D.gravityScale = lowJumpMultiplier;
-            }
-            else
-            {
-                rb2D.gravityScale = 1f;
-            }
+            col.GetComponent<VidaEnemigo>()?.RecibirDaño(dañoGolpe);
+            timerGolpe = tiempoEntreGolpes;
         }
     }
 
-    public void OpenOptions()
+    private void OnTriggerStay2D(Collider2D col)
     {
-        isPaused = true;
-        Time.timeScale = 0f;
-        SceneManager.LoadScene("Opciones", LoadSceneMode.Additive);
-    }
-
-    public void CloseOptions()
-    {
-        isPaused = false;
-        Time.timeScale = 1f;
-        if (SceneManager.GetSceneByName("Opciones").isLoaded)
-            SceneManager.UnloadSceneAsync("Opciones");
+        if (col.CompareTag("Enemy") && timerGolpe <= 0)
+        {
+            col.GetComponent<VidaEnemigo>()?.RecibirDaño(dañoGolpe);
+            timerGolpe = tiempoEntreGolpes;
+        }
     }
 }
