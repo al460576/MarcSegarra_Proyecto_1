@@ -8,8 +8,13 @@ public class Menu : MonoBehaviour
     }
     void Start()
     {
-        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("Volumen", 1f);
+        AudioSource audio = GetComponent<AudioSource>();
+        if (audio != null)
+        {
+            audio.volume = PlayerPrefs.GetFloat("Volumen", 1f);
+        }
     }
+
     public void Salir(){
         Application.Quit();
     }

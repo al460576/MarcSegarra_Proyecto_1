@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovePrueba : MonoBehaviour
 {
@@ -28,6 +29,7 @@ public class PlayerMovePrueba : MonoBehaviour
 
     private InputAction moveAction;
     private InputAction jumpAction;
+    private InputAction escAction;
 
     private float inputX = 0f;
     private bool isJumpPressed = false;
@@ -53,18 +55,27 @@ public class PlayerMovePrueba : MonoBehaviour
         jumpAction.AddBinding("<Keyboard>/upArrow");
         jumpAction.AddBinding("<Keyboard>/w");
 
+        escAction = new InputAction("Escape", InputActionType.Button);
+        escAction.AddBinding("<Keyboard>/escape");
+
         moveAction.Enable();
         jumpAction.Enable();
+        escAction.Enable();
+
         jumpAction.performed += OnJump;
         jumpAction.canceled += OnJump;
+        escAction.performed += OnEscape;
     }
 
     private void OnDisable()
     {
         jumpAction.performed -= OnJump;
         jumpAction.canceled -= OnJump;
+        escAction.performed -= OnEscape;
+
         jumpAction.Disable();
         moveAction.Disable();
+        escAction.Disable();
     }
 
     private void Update()
@@ -123,7 +134,11 @@ public class PlayerMovePrueba : MonoBehaviour
             isJumpPressed = false;
     }
 
-    // --- Ataque automático al tocar al enemigo ---
+    private void OnEscape(InputAction.CallbackContext ctx)
+    {
+        Time.timeScale = 0f;
+        SceneManager.LoadScene("Opciones", LoadSceneMode.Additive);
+    }
 
     private void OnTriggerEnter2D(Collider2D col)
     {
